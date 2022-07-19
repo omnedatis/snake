@@ -8,7 +8,7 @@ import GameOverDialog from '../components/GameOverDialog'
 function randomInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-function getEmptyCoordinate (occupied, pixelNumber) {
+function getEmptyCoordinate(occupied, pixelNumber) {
   let newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
   while (occupied.includes(newPos)) {
     newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
@@ -49,41 +49,42 @@ const snakeGo = function (coordinate, direction) {
 export default function Home(props) {
   const pixelNumber = props.pixelNumber;
   const [snakeCoordinates, setSnakeCoordinate] = useState([props.snakeStart]);
-  
+
   const [appleCoordinate, setAppleCoordinate] = useState(props.appleStart);
   const [OverDialogOn, setOverDialogOn] = useState(false);
-  const {isGameOver, setIsGameOver} = props
-  
+  const { isGameOver, setIsGameOver } = props
+
 
   const wallCoordinates = getWallCordinates(pixelNumber);
 
   const handleKeyUp = function (e) {
     const value = e.key;
     const newCoordinate = snakeGo(snakeCoordinates[0], value);
-    const newcoordinates = snakeCoordinates.slice();
-    if (wallCoordinates.has(newCoordinate)){
-      setOverDialogOn(true)
-      return
-    } else if (snakeCoordinates.includes(newCoordinate)){
-      setOverDialogOn(true)
-      return
+    if (newCoordinate) {
+      const newcoordinates = snakeCoordinates.slice();
+      if (wallCoordinates.has(newCoordinate)) {
+        setOverDialogOn(true)
+        return
+      } else if (snakeCoordinates.includes(newCoordinate)) {
+        setOverDialogOn(true)
+        return
+      }
+      if (newCoordinate === appleCoordinate) {
+        setAppleCoordinate(getEmptyCoordinate(newcoordinates, pixelNumber))
+        newcoordinates.unshift(newCoordinate);
+        setSnakeCoordinate(newcoordinates);
+      } else {
+        newcoordinates.unshift(newCoordinate);
+        newcoordinates.pop();
+        setSnakeCoordinate(newcoordinates);
+      }
     }
-    if (newCoordinate === appleCoordinate){
-      setAppleCoordinate(getEmptyCoordinate(newcoordinates, pixelNumber))
-      newcoordinates.unshift(newCoordinate);
-      setSnakeCoordinate(newcoordinates);
-    } else {
-      newcoordinates.unshift(newCoordinate);
-      newcoordinates.pop();
-      setSnakeCoordinate(newcoordinates);
-    }
-
-    }
+  }
   return (
     <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
       onKeyDown={handleKeyUp}>
-      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn}/>
+      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
       <div className={styles.row}>
         <div className={styles.row}>
 
@@ -121,8 +122,8 @@ export default function Home(props) {
 }
 
 export async function getStaticProps() {
-  const pixelNumber = 20;
+  const pixelNumber = 30;
   const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
   let appleStart = getEmptyCoordinate([snakeStart], pixelNumber)
-  return { props: { snakeStart: snakeStart, pixelNumber: pixelNumber, appleStart:appleStart} }
+  return { props: { snakeStart: snakeStart, pixelNumber: pixelNumber, appleStart: appleStart } }
 }
