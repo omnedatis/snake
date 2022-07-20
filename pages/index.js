@@ -79,17 +79,20 @@ export default function Home(props) {
       setSnakeDirection(direction)
     }
   }
+
   //effects
   useEffect(() => {
     const t = setInterval(()=>{
-      if (snakeDirection) {
+      if (snakeDirection && (!isGameOver)) {
         const newCoordinate = snakeGo(snakeCoordinates[0], snakeDirection)
         const newcoordinates = snakeCoordinates.slice();
         if (wallCoordinates.has(newCoordinate)) {
-          setOverDialogOn(true)
+          setOverDialogOn(true);
+          setIsGameOver(true);
           return
         } else if (snakeCoordinates.includes(newCoordinate)) {
-          setOverDialogOn(true)
+          setOverDialogOn(true);
+          setIsGameOver(true);
           return
         }
         if (newCoordinate === appleCoordinate) {
@@ -113,7 +116,7 @@ export default function Home(props) {
       tabIndex={0}
       onKeyDown={handleKeyUp}
       onClick={e=>setSnakeDirection(undefined)}>
-      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
+      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn}/>
       <div className={styles.row}>
         <div className={styles.row}>
 
