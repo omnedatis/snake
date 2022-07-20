@@ -5,6 +5,7 @@ import GameBoard from '../components/GameBoard'
 import { useEffect, useState } from 'react'
 import GameOverDialog from '../components/GameOverDialog'
 import moment from 'moment'
+import { useRouter } from 'next/router'
 
 // definitions
 const randomInteger = function (min, max) {
@@ -67,6 +68,9 @@ export default function Home(props) {
   allowedDirections.set('ArrowLeft', 'ArrowLeft');
   allowedDirections.set('ArrowRight', 'ArrowRight');
   const wallCoordinates = getWallCordinates(pixelNumber);
+  const router = useRouter()
+  let { delay } = router.query
+  delay = delay || 200
   const handleKeyUp = function (e) {
     const direction = allowedDirections.get(e.key);
     if (direction){
@@ -75,7 +79,6 @@ export default function Home(props) {
       setSnakeDirection(direction)
     }
   }
-
   //effects
   useEffect(() => {
     const t = setInterval(()=>{
@@ -99,7 +102,7 @@ export default function Home(props) {
           setSnakeCoordinates(newcoordinates);
         }
       }
-    }, 200)
+    }, delay)
     return () => clearInterval(t)
   })
   useEffect(e =>setScore(score+1), [appleCoordinate])
