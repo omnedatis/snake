@@ -14,7 +14,6 @@ export default function GameOverDialog(props) {
         <div className={styles.row} style={{width:'50vw', height:'20vh'}}>
             <h1 >
                 Game Over!!
-
             </h1>
         </div>
     </Dialog>

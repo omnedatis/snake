@@ -2,16 +2,18 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import GameBoard from '../components/GameBoard'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import GameOverDialog from '../components/GameOverDialog'
+import moment from 'moment'
 
-function randomInteger(min, max) {
+// definitions
+const randomInteger = function (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-function getEmptyCoordinate(occupied, pixelNumber) {
-  let newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
+const getEmptyCoordinate = function (occupied, pixelNumber) {
+  let newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
   while (occupied.includes(newPos)) {
-    newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
+    newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
   }
   return newPos
 }
@@ -42,55 +44,81 @@ const snakeGo = function (coordinate, direction) {
       ret[0]++;
       break;
     default:
-      break;
+      return;
   }
   return ret.join('_');
 }
 export default function Home(props) {
+  // props
   const pixelNumber = props.pixelNumber;
-  const [snakeCoordinates, setSnakeCoordinate] = useState([props.snakeStart]);
+  const { isGameOver, setIsGameOver } = props;
 
+  //local states
+  const [snakeCoordinates, setSnakeCoordinates] = useState([props.snakeStart]);
   const [appleCoordinate, setAppleCoordinate] = useState(props.appleStart);
+  const [snakeDirection, setSnakeDirection] = useState(undefined);
   const [OverDialogOn, setOverDialogOn] = useState(false);
-  const { isGameOver, setIsGameOver } = props
+  const [score, setScore] = useState(-1);
 
-
+  // const and func
+  const allowedDirections = new Map();
+  allowedDirections.set('ArrowDown','ArrowDown');
+  allowedDirections.set('ArrowUp', 'ArrowUp');
+  allowedDirections.set('ArrowLeft', 'ArrowLeft');
+  allowedDirections.set('ArrowRight', 'ArrowRight');
   const wallCoordinates = getWallCordinates(pixelNumber);
-
   const handleKeyUp = function (e) {
-    const value = e.key;
-    const newCoordinate = snakeGo(snakeCoordinates[0], value);
-    if (newCoordinate) {
-      const newcoordinates = snakeCoordinates.slice();
-      if (wallCoordinates.has(newCoordinate)) {
-        setOverDialogOn(true)
-        return
-      } else if (snakeCoordinates.includes(newCoordinate)) {
-        setOverDialogOn(true)
-        return
-      }
-      if (newCoordinate === appleCoordinate) {
-        setAppleCoordinate(getEmptyCoordinate(newcoordinates, pixelNumber))
-        newcoordinates.unshift(newCoordinate);
-        setSnakeCoordinate(newcoordinates);
-      } else {
-        newcoordinates.unshift(newCoordinate);
-        newcoordinates.pop();
-        setSnakeCoordinate(newcoordinates);
-      }
+    const direction = allowedDirections.get(e.key);
+    if (direction){
+      const newCoordinate = snakeGo(snakeCoordinates[0], direction)
+      if (newCoordinate===snakeCoordinates[1]) return
+      setSnakeDirection(direction)
     }
   }
+
+  //effects
+  useEffect(() => {
+    const t = setInterval(()=>{
+      if (snakeDirection) {
+        const newCoordinate = snakeGo(snakeCoordinates[0], snakeDirection)
+        const newcoordinates = snakeCoordinates.slice();
+        if (wallCoordinates.has(newCoordinate)) {
+          setOverDialogOn(true)
+          return
+        } else if (snakeCoordinates.includes(newCoordinate)) {
+          setOverDialogOn(true)
+          return
+        }
+        if (newCoordinate === appleCoordinate) {
+          setAppleCoordinate(getEmptyCoordinate(newcoordinates, pixelNumber))
+          newcoordinates.unshift(newCoordinate);
+          setSnakeCoordinates(newcoordinates);
+        } else {
+          newcoordinates.unshift(newCoordinate);
+          newcoordinates.pop();
+          setSnakeCoordinates(newcoordinates);
+        }
+      }
+    }, 200)
+    return () => clearInterval(t)
+  })
+  useEffect(e =>setScore(score+1), [appleCoordinate])
+
+  
   return (
     <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
-      onKeyDown={handleKeyUp}>
+      onKeyDown={handleKeyUp}
+      onClick={e=>setSnakeDirection(undefined)}>
       <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
       <div className={styles.row}>
         <div className={styles.row}>
 
         </div>
-        <h1 className={[styles.mid, styles.row].join(" ")} style={{ textAlign: "center" }}>
+        <h1 className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center" }}>
+          <div>&nbsp;</div>
           <span>Welcome to snake</span>
+          <span>Your Score: {score}</span>
         </h1>
         <div className={styles.row} >
 
@@ -100,7 +128,7 @@ export default function Home(props) {
         <div className={styles.row}>
 
         </div>
-        <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'stretch' }}>
+        <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'stretch', flexGrow:1.5 }}>
           <GameBoard pixelNumber={pixelNumber}
             snakeCoordinates={snakeCoordinates}
             appleCoordinate={appleCoordinate}
@@ -122,8 +150,13 @@ export default function Home(props) {
 }
 
 export async function getStaticProps() {
-  const pixelNumber = 30;
+  const pixelNumber = 20;
   const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
-  let appleStart = getEmptyCoordinate([snakeStart], pixelNumber)
-  return { props: { snakeStart: snakeStart, pixelNumber: pixelNumber, appleStart: appleStart } }
+  const appleStart = getEmptyCoordinate([snakeStart], pixelNumber)
+
+  return { props: { 
+    snakeStart: snakeStart, 
+    pixelNumber: pixelNumber, 
+    appleStart: appleStart,
+  } }
 }

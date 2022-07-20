@@ -11,6 +11,10 @@ export default function GameBoard(props) {
             const isWall = wallCoordinates.has(`${j}_${i}`);
             const isApple = (appleCoordinate=== `${j}_${i}`);
             const name = [styles.grid];
+            if (snakeCoordinates[0] === `${j}_${i}`)
+                return <div key ={`item_${j}_${i}`} className={[styles.grid, styles.head].join(" ")} >
+                    &nbsp;
+                    </div>
             if (isSnake){
                 name.push(styles.snake);
             } else if (isWall){

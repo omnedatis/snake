@@ -29,12 +29,17 @@ h1 .row {
 
 .grid {
   background-color: #fff;
+  flex-grow: 1;
 }
-
 .snake{
   background-color: #2ab853;
   border-color: #2ab853;
   border-radius: 2px;
+}
+.head{
+  background-color: #2ab853;
+  border-color: #2ab853;
+  border-radius: 10px;
 }
 .wall{
   background-color:#c2c2c1;
@@ -43,6 +48,7 @@ h1 .row {
 .apple{
   background-color:red;
   border-color: red;
+  border-radius: 5px;
 }
 /* .container {
   padding: 0 2rem;
