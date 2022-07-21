@@ -29,6 +29,26 @@ const getWallCordinates = function (upperbound) {
   }
   return ret;
 }
+const snakeTeleport = function (coordinate, direction, modNumber) {
+  let ret = coordinate.split("_");
+  switch (direction) {
+    case 'ArrowDown':
+      ret[1] = 1;
+      break;
+    case 'ArrowUp':
+      ret[1] = ret[1]-3+modNumber;
+      break;
+    case 'ArrowLeft':
+      ret[0] = ret[0]-3+modNumber;
+      break;
+    case 'ArrowRight':
+      ret[0] = 1;
+      break;
+    default:
+      return;
+  }
+  return ret.join('_');
+}
 const snakeGo = function (coordinate, direction) {
   let ret = coordinate.split("_");
   switch (direction) {
@@ -49,6 +69,8 @@ const snakeGo = function (coordinate, direction) {
   }
   return ret.join('_');
 }
+
+
 export default function Home(props) {
   // props
   const pixelNumber = props.pixelNumber;
@@ -69,14 +91,15 @@ export default function Home(props) {
   allowedDirections.set('ArrowRight', 'ArrowRight');
   const wallCoordinates = getWallCordinates(pixelNumber);
   const router = useRouter()
-  let { delay } = router.query
+  let { delay, teleport } = router.query
   delay = delay || 200
+  teleport = teleport || false
   const handleKeyUp = function (e) {
     const direction = allowedDirections.get(e.key);
     if (direction){
-      const newCoordinate = snakeGo(snakeCoordinates[0], direction)
-      if (newCoordinate===snakeCoordinates[1]) return
-      setSnakeDirection(direction)
+      const newCoordinate = snakeGo(snakeCoordinates[0], direction);
+      if (newCoordinate===snakeCoordinates[1]) return;
+      setSnakeDirection(direction);
     }
   }
 
@@ -84,12 +107,17 @@ export default function Home(props) {
   useEffect(() => {
     const t = setInterval(()=>{
       if (snakeDirection && (!isGameOver)) {
-        const newCoordinate = snakeGo(snakeCoordinates[0], snakeDirection)
+        let newCoordinate = snakeGo(snakeCoordinates[0], snakeDirection);
         const newcoordinates = snakeCoordinates.slice();
         if (wallCoordinates.has(newCoordinate)) {
-          setOverDialogOn(true);
-          setIsGameOver(true);
-          return
+          if (!teleport){
+            setOverDialogOn(true);
+            setIsGameOver(true);
+            return
+          } else{
+            newCoordinate = snakeTeleport(snakeCoordinates[0], snakeDirection, pixelNumber+2)
+          }
+  
         } else if (snakeCoordinates.includes(newCoordinate)) {
           setOverDialogOn(true);
           setIsGameOver(true);
