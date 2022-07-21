@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import GameOverDialog from '../components/GameOverDialog'
 import moment from 'moment'
 import { useRouter } from 'next/router'
+import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
 
 // definitions
 const randomInteger = function (min, max) {
@@ -36,10 +37,10 @@ const snakeTeleport = function (coordinate, direction, modNumber) {
       ret[1] = 1;
       break;
     case 'ArrowUp':
-      ret[1] = ret[1]-3+modNumber;
+      ret[1] = ret[1] - 3 + modNumber;
       break;
     case 'ArrowLeft':
-      ret[0] = ret[0]-3+modNumber;
+      ret[0] = ret[0] - 3 + modNumber;
       break;
     case 'ArrowRight':
       ret[0] = 1;
@@ -76,48 +77,52 @@ export default function Home(props) {
   const pixelNumber = props.pixelNumber;
   const { isGameOver, setIsGameOver } = props;
 
+  // const and func
+  const allowedDirections = new Map();
+  allowedDirections.set('ArrowDown', 'ArrowDown');
+  allowedDirections.set('ArrowUp', 'ArrowUp');
+  allowedDirections.set('ArrowLeft', 'ArrowLeft');
+  allowedDirections.set('ArrowRight', 'ArrowRight');
+  const wallCoordinates = getWallCordinates(pixelNumber);
+  const handleKeyUp = function (e) {
+    const direction = allowedDirections.get(e.key);
+    if (direction) {
+      const newCoordinate = snakeGo(snakeCoordinates[0], direction);
+      if (newCoordinate === snakeCoordinates[1]) return;
+      setSnakeDirection(direction);
+    }
+  }
+  const router = useRouter();
+  let { delay, teleport } = router.query
+  teleport = teleport ? true : false
+  delay = delay || 200
+
   //local states
   const [snakeCoordinates, setSnakeCoordinates] = useState([props.snakeStart]);
   const [appleCoordinate, setAppleCoordinate] = useState(props.appleStart);
   const [snakeDirection, setSnakeDirection] = useState(undefined);
   const [OverDialogOn, setOverDialogOn] = useState(false);
   const [score, setScore] = useState(-1);
+  const [teleportOK, setTeleportOK] = useState(teleport);
 
-  // const and func
-  const allowedDirections = new Map();
-  allowedDirections.set('ArrowDown','ArrowDown');
-  allowedDirections.set('ArrowUp', 'ArrowUp');
-  allowedDirections.set('ArrowLeft', 'ArrowLeft');
-  allowedDirections.set('ArrowRight', 'ArrowRight');
-  const wallCoordinates = getWallCordinates(pixelNumber);
-  const router = useRouter()
-  let { delay, teleport } = router.query
-  delay = delay || 200
-  teleport = teleport || false
-  const handleKeyUp = function (e) {
-    const direction = allowedDirections.get(e.key);
-    if (direction){
-      const newCoordinate = snakeGo(snakeCoordinates[0], direction);
-      if (newCoordinate===snakeCoordinates[1]) return;
-      setSnakeDirection(direction);
-    }
-  }
+
+
 
   //effects
   useEffect(() => {
-    const t = setInterval(()=>{
+    const t = setInterval(() => {
       if (snakeDirection && (!isGameOver)) {
         let newCoordinate = snakeGo(snakeCoordinates[0], snakeDirection);
         const newcoordinates = snakeCoordinates.slice();
         if (wallCoordinates.has(newCoordinate)) {
-          if (!teleport){
+          if (!teleportOK) {
             setOverDialogOn(true);
             setIsGameOver(true);
             return
-          } else{
-            newCoordinate = snakeTeleport(snakeCoordinates[0], snakeDirection, pixelNumber+2)
+          } else {
+            newCoordinate = snakeTeleport(snakeCoordinates[0], snakeDirection, pixelNumber + 2)
           }
-  
+
         } else if (snakeCoordinates.includes(newCoordinate)) {
           setOverDialogOn(true);
           setIsGameOver(true);
@@ -136,15 +141,13 @@ export default function Home(props) {
     }, delay)
     return () => clearInterval(t)
   })
-  useEffect(e =>setScore(score+1), [appleCoordinate])
-
-  
+  useEffect(e => setScore(score + 1), [appleCoordinate])
   return (
     <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
       onKeyDown={handleKeyUp}
-      onClick={e=>setSnakeDirection(undefined)}>
-      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn}/>
+      onClick={e => setSnakeDirection(undefined)}>
+      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
       <div className={styles.row}>
         <div className={styles.row}>
 
@@ -153,6 +156,11 @@ export default function Home(props) {
           <div>&nbsp;</div>
           <span>Welcome to snake</span>
           <span>Your Score: {score}</span>
+          <div style={{ height: "10px" }}></div>
+          <FormGroup>
+            <FormControlLabel control={<Checkbox checked={teleportOK} onClick={e => setTeleportOK(!teleportOK)} />} label="Teleportation ?" />
+
+          </FormGroup>
         </h1>
         <div className={styles.row} >
 
@@ -162,7 +170,7 @@ export default function Home(props) {
         <div className={styles.row}>
 
         </div>
-        <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'stretch', flexGrow:1.5 }}>
+        <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'stretch', flexGrow: 1.5 }}>
           <GameBoard pixelNumber={pixelNumber}
             snakeCoordinates={snakeCoordinates}
             appleCoordinate={appleCoordinate}
@@ -183,14 +191,15 @@ export default function Home(props) {
 
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const pixelNumber = 20;
   const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
   const appleStart = getEmptyCoordinate([snakeStart], pixelNumber)
-
-  return { props: { 
-    snakeStart: snakeStart, 
-    pixelNumber: pixelNumber, 
-    appleStart: appleStart,
-  } }
+  return {
+    props: {
+      snakeStart: snakeStart,
+      pixelNumber: pixelNumber,
+      appleStart: appleStart,
+    }
+  }
 }
