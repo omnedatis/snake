@@ -1,12 +1,11 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-import GameBoard from '../components/GameBoard'
-import { useEffect, useState } from 'react'
-import GameOverDialog from '../components/GameOverDialog'
-import moment from 'moment'
-import { useRouter } from 'next/router'
-import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
+import styles from '../styles/Home.module.css';
+import GameBoard from '../components/GameBoard';
+import { useEffect, useState } from 'react';
+import GameOverDialog from '../components/GameOverDialog';
+import { useRouter } from 'next/router';
+import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 // definitions
 const randomInteger = function (min, max) {
@@ -71,27 +70,28 @@ const snakeGo = function (coordinate, direction) {
   return ret.join('_');
 }
 
-
 export default function Home(props) {
   // props
   const pixelNumber = props.pixelNumber;
+  const allowedDirections = new Map(Object.entries(JSON.parse(props.allowedDirections)));
   const { isGameOver, setIsGameOver } = props;
 
   // const and func
-  const allowedDirections = new Map();
-  allowedDirections.set('ArrowDown', 'ArrowDown');
-  allowedDirections.set('ArrowUp', 'ArrowUp');
-  allowedDirections.set('ArrowLeft', 'ArrowLeft');
-  allowedDirections.set('ArrowRight', 'ArrowRight');
+
   const wallCoordinates = getWallCordinates(pixelNumber);
   const handleKeyUp = function (e) {
     const direction = allowedDirections.get(e.key);
+    console.log(allowedDirections)
     if (direction) {
       const newCoordinate = snakeGo(snakeCoordinates[0], direction);
       if (newCoordinate === snakeCoordinates[1]) return;
       setSnakeDirection(direction);
     }
   }
+  const handleClick = e => {
+    console.log('jkjkjk')
+    setSnakeDirection(undefined)
+  };
   const router = useRouter();
   let { delay, teleport } = router.query
   teleport = teleport ? true : false
@@ -105,7 +105,7 @@ export default function Home(props) {
   const [score, setScore] = useState(-1);
   const [teleportOK, setTeleportOK] = useState(teleport);
   const [blockCoordinates, setBlockCoordinates] = useState([])
-  const [count, setCount]  = useState(0)
+  const [count, setCount] = useState(0)
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -163,60 +163,51 @@ export default function Home(props) {
     <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
       onKeyDown={handleKeyUp}
-      onClick={e => setSnakeDirection(undefined)}>
+      onClick={handleClick}>
       <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
-      <div className={styles.row}>
-        <div className={styles.row}>
-
+      <div style={{ position: 'relative' }}>
+        <div className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center", position: 'absolute', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', alignItems: 'stretch' }}>
+          <h1>Welcome to snake</h1>
+          <h2 style={{ marginTop: 0 }}>Your Score: {score}</h2>
+          <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'center', flexGrow: 1.5 }}>
+            <GameBoard pixelNumber={pixelNumber}
+              snakeCoordinates={snakeCoordinates}
+              appleCoordinate={appleCoordinate}
+              wallCoordinates={wallCoordinates}
+              blockCoordinates={blockCoordinates} />
+          </div>
         </div>
-        <h1 className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center" }}>
-          <div>&nbsp;</div>
-          <span>Welcome to snake</span>
-          <span>Your Score: {score}</span>
-          <div style={{ height: "10px" }}></div>
-          <FormGroup>
-            <FormControlLabel control={<Checkbox checked={teleportOK} onClick={e => setTeleportOK(!teleportOK)} />} label="Teleportation ?" />
-          </FormGroup>
-        </h1>
-        <div className={styles.row} >
-
-        </div>
-      </div>
-      <div className={styles.row} style={{ flexGrow: 3 }}>
-        <div className={styles.row}>
-
-        </div>
-        <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'stretch', flexGrow: 1.5 }}>
-          <GameBoard pixelNumber={pixelNumber}
-            snakeCoordinates={snakeCoordinates}
-            appleCoordinate={appleCoordinate}
-            wallCoordinates={wallCoordinates}
-            blockCoordinates={blockCoordinates} />
-        </div>
-        <div className={styles.row}>
-
+        <div className={styles.col} style={{ alignSelf: 'start', alignItems: 'stretch' }}>
+          <div className={styles.row} style={{ justifyContent: 'flex-end' }}>
+            <FormatListBulletedIcon fontSize="large" style={{ margin: '15px' }} />
+            <QuestionMarkIcon fontSize="large" style={{ margin: '15px' }} />
+          </div>
         </div>
       </div>
-
       <div className={styles.row}>
         <h1>&nbsp;</h1>
-
       </div>
     </div>
 
   )
-
 }
 
 export async function getServerSideProps() {
   const pixelNumber = 20;
-  const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`
-  const appleStart = getEmptyCoordinate([snakeStart], pixelNumber)
+  const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
+  const appleStart = getEmptyCoordinate([snakeStart], pixelNumber);
+  const allowedDirections = new Map([
+    ['ArrowDown', 'ArrowDown'],
+    ['ArrowUp', 'ArrowUp'],
+    ['ArrowLeft', 'ArrowLeft'],
+    ['ArrowRight', 'ArrowRight']
+  ]);
   return {
     props: {
       snakeStart: snakeStart,
       pixelNumber: pixelNumber,
       appleStart: appleStart,
+      allowedDirections: JSON.stringify(Object.fromEntries(allowedDirections))
     }
   }
 }
