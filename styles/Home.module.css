@@ -50,6 +50,11 @@ h1 .row {
   border-color: red;
   border-radius: 5px;
 }
+.rock{
+  background-color:gray;
+  border-color: gray;
+  border-radius: 3px; 
+}
 /* .container {
   padding: 0 2rem;
 }

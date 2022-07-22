@@ -104,13 +104,12 @@ export default function Home(props) {
   const [OverDialogOn, setOverDialogOn] = useState(false);
   const [score, setScore] = useState(-1);
   const [teleportOK, setTeleportOK] = useState(teleport);
+  const [blockCoordinates, setBlockCoordinates] = useState([])
+  const [count, setCount]  = useState(0)
 
-
-
-
-  //effects
   useEffect(() => {
     const t = setInterval(() => {
+
       if (snakeDirection && (!isGameOver)) {
         let newCoordinate = snakeGo(snakeCoordinates[0], snakeDirection);
         const newcoordinates = snakeCoordinates.slice();
@@ -120,23 +119,41 @@ export default function Home(props) {
             setIsGameOver(true);
             return
           } else {
-            newCoordinate = snakeTeleport(snakeCoordinates[0], snakeDirection, pixelNumber + 2)
+            newCoordinate = snakeTeleport(snakeCoordinates[0], snakeDirection, pixelNumber + 2);
           }
 
         } else if (snakeCoordinates.includes(newCoordinate)) {
           setOverDialogOn(true);
           setIsGameOver(true);
           return
+        } else if (blockCoordinates.includes(newCoordinate)) {
+          setOverDialogOn(true);
+          setIsGameOver(true);
+          return
         }
         if (newCoordinate === appleCoordinate) {
-          setAppleCoordinate(getEmptyCoordinate(newcoordinates, pixelNumber))
           newcoordinates.unshift(newCoordinate);
           setSnakeCoordinates(newcoordinates);
+          setAppleCoordinate(getEmptyCoordinate(newcoordinates.concat(blockCoordinates), pixelNumber));
         } else {
           newcoordinates.unshift(newCoordinate);
           newcoordinates.pop();
           setSnakeCoordinates(newcoordinates);
         }
+        let block = undefined
+        setCount((count + 1) % 15)
+        let gen = randomInteger(1, 3)
+        if (count === 0 && (gen === 1)) {
+          console.log(blockCoordinates)
+          block = getEmptyCoordinate(newcoordinates.concat([appleCoordinate], blockCoordinates), pixelNumber)
+          let newBlockCoordinate = blockCoordinates.slice();
+          newBlockCoordinate.unshift(block)
+          if (newBlockCoordinate.length > 3) {
+            newBlockCoordinate.pop()
+          }
+          setBlockCoordinates(newBlockCoordinate)
+        }
+
       }
     }, delay)
     return () => clearInterval(t)
@@ -159,7 +176,6 @@ export default function Home(props) {
           <div style={{ height: "10px" }}></div>
           <FormGroup>
             <FormControlLabel control={<Checkbox checked={teleportOK} onClick={e => setTeleportOK(!teleportOK)} />} label="Teleportation ?" />
-
           </FormGroup>
         </h1>
         <div className={styles.row} >
@@ -174,7 +190,8 @@ export default function Home(props) {
           <GameBoard pixelNumber={pixelNumber}
             snakeCoordinates={snakeCoordinates}
             appleCoordinate={appleCoordinate}
-            wallCoordinates={wallCoordinates} />
+            wallCoordinates={wallCoordinates}
+            blockCoordinates={blockCoordinates} />
         </div>
         <div className={styles.row}>
 
