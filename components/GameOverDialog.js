@@ -9,8 +9,8 @@ export default function GameOverDialog(props) {
         setOverDialogOn(false);
         location.reload();
     }
-    return <Dialog open={dialogOn} onClose={handleClose} className={styles.row} >
-        <div className={styles.row} style={{width:'20vw', height:'20vh', flexGrow:2}} >
+    return <Dialog open={dialogOn} onClose={handleClose} className={styles.row}  maxWidth="sm"  fullWidth>
+        <div className={styles.row} style={{width:'30vmin', height:'30vmin', flexGrow:2}}>
             <h1 >
                 Game Over!!
             </h1>
