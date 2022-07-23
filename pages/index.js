@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import HelpDialog from '../components/HelpDialog';
 
 // definitions
 const randomInteger = function (min, max) {
@@ -81,7 +82,6 @@ export default function Home(props) {
   const wallCoordinates = getWallCordinates(pixelNumber);
   const handleKeyUp = function (e) {
     const direction = allowedDirections.get(e.key);
-    console.log(allowedDirections)
     if (direction) {
       const newCoordinate = snakeGo(snakeCoordinates[0], direction);
       if (newCoordinate === snakeCoordinates[1]) return;
@@ -89,23 +89,23 @@ export default function Home(props) {
     }
   }
   const handleClick = e => {
-    console.log('jkjkjk')
-    setSnakeDirection(undefined)
+    setSnakeDirection(undefined);
   };
   const router = useRouter();
-  let { delay, teleport } = router.query
-  teleport = teleport ? true : false
-  delay = delay || 200
+  let { delay, teleport } = router.query;
+  teleport = teleport ? true : false;
+  delay = delay || 200;
 
   //local states
   const [snakeCoordinates, setSnakeCoordinates] = useState([props.snakeStart]);
   const [appleCoordinate, setAppleCoordinate] = useState(props.appleStart);
   const [snakeDirection, setSnakeDirection] = useState(undefined);
-  const [OverDialogOn, setOverDialogOn] = useState(false);
   const [score, setScore] = useState(-1);
   const [teleportOK, setTeleportOK] = useState(teleport);
-  const [blockCoordinates, setBlockCoordinates] = useState([])
-  const [count, setCount] = useState(0)
+  const [blockCoordinates, setBlockCoordinates] = useState([]);
+  const [count, setCount] = useState(0);
+  const [OverDialogOn, setOverDialogOn] = useState(false);
+  const [helpDialogOn, setHelpDialogOn] = useState(true);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -140,14 +140,15 @@ export default function Home(props) {
           newcoordinates.pop();
           setSnakeCoordinates(newcoordinates);
         }
-        let block = undefined
+       
         setCount((count + 1) % 15)
         let gen = randomInteger(1, 3)
         if (count === 0 && (gen === 1)) {
-          console.log(blockCoordinates)
-          block = getEmptyCoordinate(newcoordinates.concat([appleCoordinate], blockCoordinates), pixelNumber)
+          const front1 = snakeGo(snakeCoordinates[0], snakeDirection)
+          const front2 = snakeGo(front1, snakeDirection)
+          const block = getEmptyCoordinate(newcoordinates.concat([appleCoordinate, front1, front2], blockCoordinates), pixelNumber)
           let newBlockCoordinate = blockCoordinates.slice();
-          newBlockCoordinate.unshift(block)
+          newBlockCoordinate.unshift(block);
           if (newBlockCoordinate.length > 3) {
             newBlockCoordinate.pop()
           }
@@ -164,6 +165,7 @@ export default function Home(props) {
       tabIndex={0}
       onKeyDown={handleKeyUp}
       onClick={handleClick}>
+      <HelpDialog helpDialogOn={helpDialogOn} setHelpDialogOn={setHelpDialogOn} />
       <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
       <div style={{ position: 'relative' }}>
         <div className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center", position: 'absolute', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', alignItems: 'stretch' }}>
@@ -180,11 +182,14 @@ export default function Home(props) {
         <div className={styles.col} style={{ alignSelf: 'start', alignItems: 'stretch' }}>
           <div className={styles.row} style={{ justifyContent: 'flex-end' }}>
             <FormatListBulletedIcon fontSize="large" style={{ margin: '15px' }} />
-            <QuestionMarkIcon fontSize="large" style={{ margin: '15px' }} />
+            <div style={{ margin: '15px', zIndex:3}} onClick={e => setHelpDialogOn(true)} >
+              <QuestionMarkIcon fontSize="large" />
+            </div>
+
           </div>
         </div>
       </div>
-      <div className={styles.row}>
+      <div className={styles.row} onClick={e=> console.log('frank')}>
         <h1>&nbsp;</h1>
       </div>
     </div>
