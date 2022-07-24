@@ -29,16 +29,16 @@ export default function GameMeter(props) {
     let ret = delay;
     switch(value){
       case 1:
-        ret = 50;
+        ret = 200;
         break;
       case 2:
-        ret = 100;
-        break;
-      case 3:
         ret = 150;
         break;
+      case 3:
+        ret = 100;
+        break;
       case 4:
-        ret = 200;
+        ret = 50;
       default:
         break;
         
@@ -62,7 +62,7 @@ export default function GameMeter(props) {
       getAriaValueText={valuetext}
       onChange={delayHandleChange}
       step={1}
-      defaultValue={4}
+      defaultValue={1}
       min={1}
       max={4}
       marks />
