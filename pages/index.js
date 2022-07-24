@@ -7,6 +7,7 @@ import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import HelpDialog from '../components/HelpDialog';
+import GameMeter from '../components/GameMeter';
 
 // definitions
 const randomInteger = function (min, max) {
@@ -37,6 +38,10 @@ export default function Home(props) {
     }
   }
   const handleClick = e => setDirection(undefined);
+  const helpHandleClick = e => setHelpDialogOn(true)
+  const meterHandleClick = e => {
+    setIsTranslate(!isTranslated)
+  }
   const router = useRouter();
   let { delay } = router.query;
   delay = delay || 200;
@@ -46,11 +51,20 @@ export default function Home(props) {
   const [teleportOK, setTeleportOK] = useState(true);
   const [OverDialogOn, setOverDialogOn] = useState(false);
   const [helpDialogOn, setHelpDialogOn] = useState(true);
-
+  const [isTranslated, setIsTranslate] = useState(false);
+  const [meterName, setMeterName] = useState([styles.togglemeter]);
   //effects
   useEffect(e => {
-    if (isGameOver ===true) setOverDialogOn(true)
+    if (isGameOver === true) setOverDialogOn(true)
   }, [isGameOver])
+  useEffect(e => {
+    if (isTranslated) {
+      setMeterName([styles.togglemeter, styles.translated])
+    } else {
+      setMeterName([styles.togglemeter])
+    }
+
+  }, [isTranslated])
   return (
     <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
@@ -59,6 +73,7 @@ export default function Home(props) {
       <HelpDialog helpDialogOn={helpDialogOn} setHelpDialogOn={setHelpDialogOn} />
       <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
       <div style={{ position: 'relative' }}>
+        <GameMeter name={meterName.join(" ")} />
         <div className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center", position: 'absolute', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', alignItems: 'stretch' }}>
           <h1>Welcome to snake</h1>
           <h2 style={{ marginTop: 0 }}>Your Score: {score}</h2>
@@ -78,8 +93,10 @@ export default function Home(props) {
         </div>
         <div className={styles.col} style={{ alignSelf: 'start', alignItems: 'stretch' }}>
           <div className={styles.row} style={{ justifyContent: 'flex-end' }}>
-            <FormatListBulletedIcon fontSize="large" style={{ margin: '15px' }} />
-            <div style={{ margin: '15px', zIndex: 3 }} onClick={e => setHelpDialogOn(true)} >
+            <div style={{ margin: '15px', zIndex: 3 }} onClick={meterHandleClick} >
+              <FormatListBulletedIcon fontSize="large" />
+            </div>
+            <div style={{ margin: '15px', zIndex: 3 }} onClick={helpHandleClick} >
               <QuestionMarkIcon fontSize="large" />
             </div>
 

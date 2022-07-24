@@ -16,7 +16,7 @@ export default function HelpDialog(props) {
             const count = (reRender+1)%20
             setReRender(count)
         }, 1500)
-        return clearInterval
+        return () => clearInterval(t)
     })
     useEffect(e=> setDialogRefresh(dialogRefreash+1), [helpDialogOn])
 
