@@ -65,27 +65,31 @@ export default function GameBoard(props) {
     // props
     const boundNumber = props.pixelNumber + 1;
     const direction = props.snakeDirection;
-    const isGameOver = props.isGameOver;
-    const setIsGameOver = props.setIsGameOver;
+    
 
     // optional props
     const snakeStart = props.snakeStart || '0_0';
-    const appleStart = props.appleStart || '0_1;'
-    const blocksStart = props.blocksStart || [];
+    const appleStart = props.appleStart || '0_1';
+    const rocksStart = props.rocksStart || [];
     const teleportOK = props.teleportOK || true;
     const delay = props.delay || 200;
-    const startScore = props.startScore || 0;
-
+    const score = props.score || 0;
+    const setScore = props.setScore || function (){e=>score++};
+    const isGameOver = props.isGameOver || false;
+    const setIsGameOver = props.setIsGameOver || function () {isGameOver=true};
+    const frame = props.frame || { height: '50vmin', width: '50vmin' };
+    
     //consts
     const wallCoordinates = getWallCordinates(boundNumber);
-
+    const genRockPeriod = 15;
     // prop states
     const [appleCoordinate, setAppleCoordinate] = useState(appleStart);
     const [snakeCoordinates, setSnakeCoordinates] = useState([snakeStart]);
-    const [blockCoordinates, setBlockCoordinates] = useState(blocksStart);
-    const [score, setScore] = useState(startScore);
+    const [rockCoordinates, setrockCoordinates] = useState(rocksStart);
+
+
     //local states
-    const [count, setCount] = useState(0);
+    const [count, setCount] = useState(1);
     const [snakeDirection, setSnakeDirection] = useState(direction);
 
     //effects
@@ -106,32 +110,32 @@ export default function GameBoard(props) {
                 } else if (snakeCoordinates.includes(newCoordinate)) {
                     setIsGameOver(true);
                     return
-                } else if (blockCoordinates.includes(newCoordinate)) {
+                } else if (rockCoordinates.includes(newCoordinate)) {
                     setIsGameOver(true);
                     return
                 }
                 if (newCoordinate === appleCoordinate) {
                     newcoordinates.unshift(newCoordinate);
                     setSnakeCoordinates(newcoordinates);
-                    setAppleCoordinate(getEmptyCoordinate(newcoordinates.concat(blockCoordinates), boundNumber-1));
+                    setAppleCoordinate(getEmptyCoordinate(newcoordinates.concat(rockCoordinates), boundNumber-1));
                 } else {
                     newcoordinates.unshift(newCoordinate);
                     newcoordinates.pop();
                     setSnakeCoordinates(newcoordinates);
                 }
 
-                setCount((count + 1) % 15)
+                setCount((count + 1) % genRockPeriod)
                 let gen = randomInteger(1, 3)
                 if (count === 0 && (gen === 1)) {
                     const front1 = snakeGo(snakeCoordinates[0], snakeDirection)
                     const front2 = snakeGo(front1, snakeDirection)
-                    const block = getEmptyCoordinate(newcoordinates.concat([appleCoordinate, front1, front2], blockCoordinates), boundNumber-1)
-                    let newBlockCoordinate = blockCoordinates.slice();
-                    newBlockCoordinate.unshift(block);
-                    if (newBlockCoordinate.length > 3) {
-                        newBlockCoordinate.pop()
+                    const newRock = getEmptyCoordinate(newcoordinates.concat([appleCoordinate, front1, front2], rockCoordinates), boundNumber-1)
+                    let newRockCoordinate = rockCoordinates.slice();
+                    newRockCoordinate.unshift(newRock);
+                    if (newRockCoordinate.length > 3) {
+                        newRockCoordinate.pop()
                     }
-                    setBlockCoordinates(newBlockCoordinate)
+                    setrockCoordinates(newRockCoordinate)
                 }
 
             }
@@ -151,7 +155,7 @@ export default function GameBoard(props) {
             const isSnake = snakeCoordinates.includes(`${j}_${i}`);
             const isWall = wallCoordinates.has(`${j}_${i}`);
             const isApple = (appleCoordinate === `${j}_${i}`);
-            const isRock = blockCoordinates.includes(`${j}_${i}`)
+            const isRock = rockCoordinates.includes(`${j}_${i}`)
             const name = [styles.grid];
             if (snakeCoordinates[0] === `${j}_${i}`)
                 return <div key={`item_${j}_${i}`} className={[styles.grid, styles.head].join(" ")} >
@@ -171,5 +175,5 @@ export default function GameBoard(props) {
 
         return <div key={`row_${i}`} className={styles.row} >{rowItems}</div>
     })
-    return <div style={{ height: '50vmin', width: '50vmin' }}>{board}</div>
+    return <div style={frame}>{board}</div>
 }

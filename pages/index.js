@@ -29,7 +29,7 @@ export default function Home(props) {
   const appleStart = props.appleStart;
 
   // const and func
-  const score = 0
+  const [score, setScore] = useState(-1);
   const handleKeyUp = function (e) {
     const newDirection = allowedDirections.get(e.key);
     if (newDirection) {
@@ -71,7 +71,8 @@ export default function Home(props) {
               appleStart={appleStart}
               teleportOK={teleportOK}
               delay={delay}
-              startScore={score}
+              setScore={setScore}
+              score={score}
             />
           </div>
         </div>
