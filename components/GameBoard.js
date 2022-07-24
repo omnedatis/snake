@@ -4,10 +4,10 @@ import styles from '../styles/Home.module.css'
 const randomInteger = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-const getEmptyCoordinate = function (occupied, pixelNumber) {
-    let newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
+const getEmptyCoordinate = function (occupied, upperbound) {
+    let newPos = `${randomInteger(1, upperbound)}_${randomInteger(1, upperbound)}`;
     while (occupied.includes(newPos)) {
-        newPos = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
+        newPos = `${randomInteger(1, upperbound)}_${randomInteger(1, upperbound)}`;
     }
     return newPos
 }
@@ -63,22 +63,21 @@ const snakeGo = function (coordinate, direction) {
 }
 export default function GameBoard(props) {
     // props
-    const boundNumber = props.pixelNumber + 1;
+    const boundNumber = props.boardSize + 1;
     const direction = props.snakeDirection;
-    
-
     // optional props
     const snakeStart = props.snakeStart || '0_0';
     const appleStart = props.appleStart || '0_1';
     const rocksStart = props.rocksStart || [];
-    const teleportOK = props.teleportOK || true;
+    const teleportOK = props.teleportOK ?? true;
     const delay = props.delay || 200;
+    const rockNumber = props.rockNumber || 3;
     const score = props.score || 0;
     const setScore = props.setScore || function (){e=>score++};
     const isGameOver = props.isGameOver || false;
     const setIsGameOver = props.setIsGameOver || function () {isGameOver=true};
     const frame = props.frame || { height: '50vmin', width: '50vmin' };
-    
+
     //consts
     const wallCoordinates = getWallCordinates(boundNumber);
     const genRockPeriod = 15;
@@ -125,14 +124,19 @@ export default function GameBoard(props) {
                 }
 
                 setCount((count + 1) % genRockPeriod)
-                let gen = randomInteger(1, 3)
-                if (count === 0 && (gen === 1)) {
+                
+                if (count === 0) {
                     const front1 = snakeGo(snakeCoordinates[0], snakeDirection)
                     const front2 = snakeGo(front1, snakeDirection)
                     const newRock = getEmptyCoordinate(newcoordinates.concat([appleCoordinate, front1, front2], rockCoordinates), boundNumber-1)
-                    let newRockCoordinate = rockCoordinates.slice();
-                    newRockCoordinate.unshift(newRock);
-                    if (newRockCoordinate.length > 3) {
+                    const newRockCoordinate = rockCoordinates.slice();
+                    const gen = randomInteger(1, 3)
+                    if (gen === 1){
+                        newRockCoordinate.unshift('')
+                    } else {
+                        newRockCoordinate.unshift(newRock);
+                    }
+                    if (newRockCoordinate.length > rockNumber) {
                         newRockCoordinate.pop()
                     }
                     setrockCoordinates(newRockCoordinate)

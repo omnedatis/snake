@@ -3,7 +3,7 @@ import GameBoard from "./GameBoard";
 
 export default function GoThrouhghWallExample(props) {
   const reRender = props.reRender
-  const pixelNumber = 4;
+  const boardSize = 4;
   const delay = 200;
   const snakeStart = '1_1';
   const rocksStart = [];
@@ -28,7 +28,7 @@ export default function GoThrouhghWallExample(props) {
       }
   , [])
 
-  return <GameBoard key={reRender} pixelNumber={pixelNumber}
+  return <GameBoard key={reRender} boardSize={boardSize}
   snakeDirection={direction}
   snakeStart={snakeStart}
   appleStart={appleStart}
