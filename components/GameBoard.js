@@ -82,7 +82,6 @@ const getSnakeStart = async function (boardSize) {
 const getAppleStart = async function (occupied, boardSize) {
     const path = '/api/getAppleStart'
     const resp = await fetcher(path, {boardSize:boardSize, occupied:occupied}).then(data =>data);
-    console.log(resp, 'fuck')
     return resp.body.appleStart
 }
 export default function GameBoard (props) {
@@ -115,6 +114,7 @@ export default function GameBoard (props) {
     const [appleCoordinate, setAppleCoordinate] = useState(appleStart);
     const [snakeCoordinates, setSnakeCoordinates] = useState([snakeStart]);
     const [rockCoordinates, setrockCoordinates] = useState(rocksStart);
+    
     //local states
     const [count, setCount] = useState(1);
     const [snakeDirection, setSnakeDirection] = useState(direction);

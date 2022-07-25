@@ -40,6 +40,7 @@ export default function Home(props) {
   const [helpDialogOn, setHelpDialogOn] = useState(true);
   const [isTranslated, setIsTranslate] = useState(false);
   const [meterName, setMeterName] = useState([styles.togglemeter]);
+  const [gameId, setGameId] = useState(0)
 
   // game board io
   const [score, setScore] = useState(-1);
@@ -82,17 +83,20 @@ export default function Home(props) {
     if (isTranslated) {
       setMeterName([styles.togglemeter, styles.translated])
     } else {
-      setMeterName([styles.togglemeter])
+      setMeterName([styles.togglemeter]);
     }
-
   }, [isTranslated])
+  useEffect(()=>{
+    setScore(0);
+    setDirection(undefined);
+  }, [isGameOver])
   return (
     <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
       onKeyDown={handleKeyUp}
       onClick={handleClick}>
       <HelpDialog helpDialogOn={helpDialogOn} setHelpDialogOn={setHelpDialogOn} />
-      <GameOverDialog OverDialogOn={OverDialogOn} setIsGameOver={setIsGameOver} setOverDialogOn={setOverDialogOn} />
+      <GameOverDialog OverDialogOn={OverDialogOn} setOverDialogOn={setOverDialogOn} setGameId={setGameId} gameId={gameId} setIsGameOver={setIsGameOver} />
       <div style={{ position: 'relative' }}>
         <GameMeter name={meterName.join(" ")} gameSettings={gameSettings}/>
         <div className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center", position: 'absolute', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', alignItems: 'stretch' }}>
@@ -108,6 +112,7 @@ export default function Home(props) {
               setScore={setScore}
               score={score}
               rockNumber={rockNumber}
+              key={gameId}
             />
           </div>
         </div>
