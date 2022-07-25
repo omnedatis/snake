@@ -23,29 +23,35 @@ const getEmptyCoordinate = function (occupied, upperbound) {
 
 export default function Home(props) {
   // props or query
-  const pixelNumber = props.pixelNumber;
-  const allowedDirections = new Map(Object.entries(JSON.parse(props.allowedDirections)));
   const { isGameOver, setIsGameOver } = props;
-  const snakeStart = props.snakeStart;
-  const appleStart = props.appleStart;
-  const router = useRouter();
-  let { timedelay } = router.query;
-  timedelay = timedelay || 200;
+
+  // const
+  const allowedDirections = new Map([
+    ['ArrowDown', 'ArrowDown'],
+    ['ArrowUp', 'ArrowUp'],
+    ['ArrowLeft', 'ArrowLeft'],
+    ['ArrowRight', 'ArrowRight']
+  ]);
 
 
-  //states
-  const [score, setScore] = useState(-1);
-  const [direction, setDirection] = useState(undefined);
-  const [teleportOK, setTeleportOK] = useState(true);
+  // states 
+  // flow control
   const [OverDialogOn, setOverDialogOn] = useState(false);
   const [helpDialogOn, setHelpDialogOn] = useState(true);
   const [isTranslated, setIsTranslate] = useState(false);
   const [meterName, setMeterName] = useState([styles.togglemeter]);
+
+  // game board io
+  const [score, setScore] = useState(-1);
+  const [direction, setDirection] = useState(undefined);
+
+  // parameter tuning
+  const [teleportOK, setTeleportOK] = useState(true);
   const [rockNumber, setRockNumber] = useState(3);
-  const [boardSize, setBoardSize] = useState(pixelNumber);
-  const [delay, setDelay] = useState(timedelay);
+  const [boardSize, setBoardSize] = useState(20);
+  const [delay, setDelay] = useState(200);
   
-  // const and func
+  // event handling
   const handleKeyUp = function (e) {
     const newDirection = allowedDirections.get(e.key);
     if (newDirection) {
@@ -57,7 +63,16 @@ export default function Home(props) {
   const meterHandleClick = e => {
     setIsTranslate(!isTranslated)
   }
-  const gameSettings = {teleportOK, setTeleportOK, rockNumber, setRockNumber, boardSize, setBoardSize, delay, setDelay}
+  const gameSettings = {
+    teleportOK, 
+    setTeleportOK, 
+    rockNumber, 
+    setRockNumber, 
+    boardSize, 
+    setBoardSize, 
+    delay, 
+    setDelay
+  }
 
   //effects
   useEffect(e => {
@@ -88,8 +103,6 @@ export default function Home(props) {
               snakeDirection={direction}
               isGameOver={isGameOver}
               setIsGameOver={setIsGameOver}
-              snakeStart={snakeStart}
-              appleStart={appleStart}
               teleportOK={teleportOK}
               delay={delay}
               setScore={setScore}
@@ -118,22 +131,22 @@ export default function Home(props) {
   )
 }
 
-export async function getServerSideProps() {
-  const pixelNumber = 20;
-  const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
-  const appleStart = getEmptyCoordinate([snakeStart], pixelNumber);
-  const allowedDirections = new Map([
-    ['ArrowDown', 'ArrowDown'],
-    ['ArrowUp', 'ArrowUp'],
-    ['ArrowLeft', 'ArrowLeft'],
-    ['ArrowRight', 'ArrowRight']
-  ]);
-  return {
-    props: {
-      snakeStart: snakeStart,
-      appleStart: appleStart,
-      pixelNumber: pixelNumber,
-      allowedDirections: JSON.stringify(Object.fromEntries(allowedDirections))
-    }
-  }
-}
+// export async function getServerSideProps() {
+//   const pixelNumber = 20;
+//   const snakeStart = `${randomInteger(1, pixelNumber)}_${randomInteger(1, pixelNumber)}`;
+//   const appleStart = getEmptyCoordinate([snakeStart], pixelNumber);
+//   const allowedDirections = new Map([
+//     ['ArrowDown', 'ArrowDown'],
+//     ['ArrowUp', 'ArrowUp'],
+//     ['ArrowLeft', 'ArrowLeft'],
+//     ['ArrowRight', 'ArrowRight']
+//   ]);
+//   return {
+//     props: {
+//       snakeStart: snakeStart,
+//       appleStart: appleStart,
+//       pixelNumber: pixelNumber,
+//       allowedDirections: JSON.stringify(Object.fromEntries(allowedDirections))
+//     }
+//   }
+// }
