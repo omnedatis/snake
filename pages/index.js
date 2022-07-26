@@ -8,6 +8,7 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import HelpDialog from '../components/HelpDialog';
 import GameMeter from '../components/GameMeter';
+import ReactDOM from 'react-dom';
 
 // definitions
 const randomInteger = function (min, max) {
@@ -51,7 +52,7 @@ export default function Home(props) {
   const [rockNumber, setRockNumber] = useState(3);
   const [boardSize, setBoardSize] = useState(20);
   const [delay, setDelay] = useState(200);
-  
+
   // event handling
   const handleKeyUp = function (e) {
     const newDirection = allowedDirections.get(e.key);
@@ -65,13 +66,13 @@ export default function Home(props) {
     setIsTranslate(!isTranslated)
   }
   const gameSettings = {
-    teleportOK, 
-    setTeleportOK, 
-    rockNumber, 
-    setRockNumber, 
-    boardSize, 
-    setBoardSize, 
-    delay, 
+    teleportOK,
+    setTeleportOK,
+    rockNumber,
+    setRockNumber,
+    boardSize,
+    setBoardSize,
+    delay,
     setDelay
   }
 
@@ -86,19 +87,25 @@ export default function Home(props) {
       setMeterName([styles.togglemeter]);
     }
   }, [isTranslated])
-  useEffect(()=>{
+  useEffect(() => {
     setScore(0);
     setDirection(undefined);
   }, [isGameOver])
+  useEffect(() => {
+    console.log(document.getElementById("game-convas").focus)
+    document.getElementById("game-convas").focus()
+  }, [])
   return (
-    <div style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
+    <div
+      id="game-convas"
+      style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
       onKeyDown={handleKeyUp}
       onClick={handleClick}>
       <HelpDialog helpDialogOn={helpDialogOn} setHelpDialogOn={setHelpDialogOn} />
       <GameOverDialog OverDialogOn={OverDialogOn} setOverDialogOn={setOverDialogOn} setGameId={setGameId} gameId={gameId} setIsGameOver={setIsGameOver} />
       <div style={{ position: 'relative' }}>
-        <GameMeter name={meterName.join(" ")} gameSettings={gameSettings}/>
+        <GameMeter name={meterName.join(" ")} gameSettings={gameSettings} />
         <div className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center", position: 'absolute', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', alignItems: 'stretch' }}>
           <h1>Welcome to snake</h1>
           <h2 style={{ marginTop: 0 }}>Your Score: {score}</h2>
@@ -124,7 +131,6 @@ export default function Home(props) {
             <div style={{ margin: '15px', zIndex: 3 }} onClick={helpHandleClick} >
               <QuestionMarkIcon fontSize="large" />
             </div>
-
           </div>
         </div>
       </div>

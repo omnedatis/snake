@@ -4,7 +4,16 @@ import styles from '../styles/Home.module.css';
 
 export default function GameMeter(props) {
   const name = props.name;
-  const { teleportOK, setTeleportOK, rockNumber, setRockNumber, boardSize, setBoardSize, delay, setDelay } = props.gameSettings;
+  const {
+    teleportOK,
+    setTeleportOK,
+    rockNumber,
+    setRockNumber,
+    boardSize,
+    setBoardSize,
+    delay,
+    setDelay
+  } = props.gameSettings;
   const rockHandleChange = function (e) {
     const value = parseInt(e.target.value)
     if (value > ((boardSize * boardSize) / 20)) {
@@ -27,7 +36,7 @@ export default function GameMeter(props) {
   }
   const delayHandleChange = function (e, value) {
     let ret = delay;
-    switch(value){
+    switch (value) {
       case 1:
         ret = 200;
         break;
@@ -41,7 +50,6 @@ export default function GameMeter(props) {
         ret = 50;
       default:
         break;
-        
     }
     setDelay(ret)
   }
