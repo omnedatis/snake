@@ -157,6 +157,7 @@ export default function GameBoard (props) {
                     newcoordinates.unshift(newCoordinate);
                     setSnakeCoordinates(newcoordinates);
                     setAppleCoordinate(getEmptyCoordinate(newcoordinates.concat(rockCoordinates), boundNumber - 1));
+                    setScore(score + 1);
                 } else {
                     newcoordinates.unshift(newCoordinate);
                     newcoordinates.pop();
@@ -185,15 +186,14 @@ export default function GameBoard (props) {
             }
         }, delay)
         return () => clearInterval(t)
-    })
-    useEffect(e => setScore(score + 1), [appleCoordinate])
+    });
     useEffect(e => {
         if (direction !== undefined) {
             if (snakeGo(snakeCoordinates[0], direction) === snakeCoordinates[1]) return;
         }
         setSnakeDirection(direction);
 
-    }, [direction])
+    }, [direction]);
     const board = Array(boundNumber + 1).fill().slice().map(($, i) => {
         const rowItems = Array(boundNumber + 1).fill().slice().map(($, j) => {
             const isSnake = snakeCoordinates.includes(`${j}_${i}`);

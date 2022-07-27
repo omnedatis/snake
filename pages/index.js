@@ -24,7 +24,6 @@ const getEmptyCoordinate = function (occupied, upperbound) {
 
 export default function Home(props) {
   // props or query
-  const { isGameOver, setIsGameOver } = props;
 
   // const
   const allowedDirections = new Map([
@@ -44,7 +43,8 @@ export default function Home(props) {
   const [gameId, setGameId] = useState(0)
 
   // game board io
-  const [score, setScore] = useState(-1);
+  const [score, setScore] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
   const [direction, setDirection] = useState(undefined);
 
   // parameter tuning
