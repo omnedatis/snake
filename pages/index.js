@@ -78,9 +78,6 @@ export default function Home(props) {
 
   //effects
   useEffect(e => {
-    if (isGameOver === true) setOverDialogOn(true)
-  }, [isGameOver])
-  useEffect(e => {
     if (isTranslated) {
       setMeterName([styles.togglemeter, styles.translated])
     } else {
@@ -88,11 +85,11 @@ export default function Home(props) {
     }
   }, [isTranslated])
   useEffect(() => {
+    if (isGameOver === true) setOverDialogOn(true)
     setScore(0);
     setDirection(undefined);
   }, [isGameOver])
   useEffect(() => {
-    console.log(document.getElementById("game-convas").focus)
     document.getElementById("game-convas").focus()
   }, [])
   return (
