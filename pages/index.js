@@ -1,6 +1,6 @@
 import styles from '../styles/Home.module.css';
 import GameBoard from '../components/GameBoard';
-import { useEffect, useState } from 'react';
+import { createRef, useEffect, useRef, useState } from 'react';
 import GameOverDialog from '../components/GameOverDialog';
 import { useRouter } from 'next/router';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
@@ -9,6 +9,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import HelpDialog from '../components/HelpDialog';
 import GameMeter from '../components/GameMeter';
 import ReactDOM from 'react-dom';
+import moment from 'moment';
 
 // definitions
 const randomInteger = function (min, max) {
@@ -21,9 +22,29 @@ const getEmptyCoordinate = function (occupied, upperbound) {
   }
   return newPos
 }
-
+function useForceUpdate() {
+  const [value, setValue] = useState(0);
+  return () => setValue((value) => value + 1);
+}
 export default function Home(props) {
   // props or query
+
+  // states 
+  // flow control
+  const [OverDialogOn, setOverDialogOn] = useState(false);
+  const [helpDialogOn, setHelpDialogOn] = useState(true);
+  const [isTranslated, setIsTranslate] = useState(false);
+  const [meterName, setMeterName] = useState([styles.togglemeter]);
+  const [gameId, setGameId] = useState(0);
+
+  // game board io
+  const [direction, setDirection] = useState(undefined);
+
+  // parameter tuning
+  const [teleportOK, setTeleportOK] = useState(true);
+  const [rockNumber, setRockNumber] = useState(3);
+  const [boardSize, setBoardSize] = useState(20);
+  const [delay, setDelay] = useState(200);
 
   // const
   const allowedDirections = new Map([
@@ -32,26 +53,18 @@ export default function Home(props) {
     ['ArrowLeft', 'ArrowLeft'],
     ['ArrowRight', 'ArrowRight']
   ]);
-
-
-  // states 
-  // flow control
-  const [OverDialogOn, setOverDialogOn] = useState(false);
-  const [helpDialogOn, setHelpDialogOn] = useState(true);
-  const [isTranslated, setIsTranslate] = useState(false);
-  const [meterName, setMeterName] = useState([styles.togglemeter]);
-  const [gameId, setGameId] = useState(0)
-
-  // game board io
-  const [score, setScore] = useState(0);
-  const [isGameOver, setIsGameOver] = useState(false);
-  const [direction, setDirection] = useState(undefined);
-
-  // parameter tuning
-  const [teleportOK, setTeleportOK] = useState(true);
-  const [rockNumber, setRockNumber] = useState(3);
-  const [boardSize, setBoardSize] = useState(20);
-  const [delay, setDelay] = useState(200);
+  const boardStates = useRef();
+  const forceUpdate = useForceUpdate()
+  const gameSettings = {
+    teleportOK,
+    setTeleportOK,
+    rockNumber,
+    setRockNumber,
+    boardSize,
+    setBoardSize,
+    delay,
+    setDelay
+  }
 
   // event handling
   const handleKeyUp = function (e) {
@@ -65,15 +78,24 @@ export default function Home(props) {
   const meterHandleClick = e => {
     setIsTranslate(!isTranslated)
   }
-  const gameSettings = {
-    teleportOK,
-    setTeleportOK,
-    rockNumber,
-    setRockNumber,
-    boardSize,
-    setBoardSize,
-    delay,
-    setDelay
+  const boardListener = async (id) => {
+    let refresh = false;
+    let prev;
+    while (true){
+      if (boardStates.current?.getIsGameOver() === true){
+        setOverDialogOn(true);
+        refresh = true;
+      }
+      if (prev !==boardStates.current?.getScore()){
+        prev = boardStates.current?.getScore();
+        refresh = true;
+      }
+      if (refresh){
+        forceUpdate()
+      }
+      const dum =  await new Promise(r=>setTimeout(r,100)).then(d=>d);
+      refresh = false;
+    }
   }
 
   //effects
@@ -85,38 +107,33 @@ export default function Home(props) {
     }
   }, [isTranslated])
   useEffect(() => {
-    if (isGameOver === true) setOverDialogOn(true)
-    setScore(0);
-    setDirection(undefined);
-  }, [isGameOver])
-  useEffect(() => {
+    boardListener(1)
     document.getElementById("game-convas").focus()
   }, [])
+  
   return (
     <div
       id="game-convas"
       style={{ display: 'flex', flexDirection: "column", justifyContent: "center", height: '100vh' }}
       tabIndex={0}
       onKeyDown={handleKeyUp}
-      onClick={handleClick}>
+      onClick={handleClick}
+      >
       <HelpDialog helpDialogOn={helpDialogOn} setHelpDialogOn={setHelpDialogOn} />
-      <GameOverDialog OverDialogOn={OverDialogOn} setOverDialogOn={setOverDialogOn} setGameId={setGameId} gameId={gameId} setIsGameOver={setIsGameOver} />
+      <GameOverDialog OverDialogOn={OverDialogOn} setOverDialogOn={setOverDialogOn} setGameId={setGameId} gameId={gameId} boardStates={boardStates} />
       <div style={{ position: 'relative' }}>
         <GameMeter name={meterName.join(" ")} gameSettings={gameSettings} />
         <div className={[styles.mid, styles.col].join(" ")} style={{ textAlign: "center", position: 'absolute', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', alignItems: 'stretch' }}>
           <h1>Welcome to snake</h1>
-          <h2 style={{ marginTop: 0 }}>Your Score: {score}</h2>
+          <h2 style={{ marginTop: 0 }}>Your Score: {boardStates.current?.getScore()}</h2>
           <div className={[styles.mid, styles.col].join(" ")} style={{ alignItems: 'center', flexGrow: 1.5 }}>
             <GameBoard boardSize={boardSize}
               snakeDirection={direction}
-              isGameOver={isGameOver}
-              setIsGameOver={setIsGameOver}
               teleportOK={teleportOK}
               delay={delay}
-              setScore={setScore}
-              score={score}
               rockNumber={rockNumber}
               key={gameId}
+              ref={boardStates}
             />
           </div>
         </div>

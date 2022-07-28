@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import styles from '../styles/Home.module.css'
 
 const randomInteger = function (min, max) {
@@ -84,7 +84,7 @@ const getAppleStart = async function (occupied, boardSize) {
     const resp = await fetcher(path, {boardSize:boardSize, occupied:occupied}).then(data =>data);
     return resp.body.appleStart
 }
-export default function GameBoard (props) {
+const GameBoard = forwardRef((props, ref)=> {
 
     
     // props
@@ -101,11 +101,6 @@ export default function GameBoard (props) {
     const rockNumber = props.rockNumber || 3;
     const frame = props.frame || { height: '50vmin', width: '50vmin' };
 
-    const score = props.score || 0;
-    const setScore = props.setScore || function () { e => score++ };
-    const isGameOver = props.isGameOver || false;
-    const setIsGameOver = props.setIsGameOver || function () { isGameOver = true };
-
     //consts
     const wallCoordinates = getWallCordinates(boundNumber);
     const genRockPeriod = 15;
@@ -116,8 +111,10 @@ export default function GameBoard (props) {
     const [rockCoordinates, setrockCoordinates] = useState(rocksStart);
     
     //local states
+    const [score, setScore] = useState(0);
     const [count, setCount] = useState(1);
     const [snakeDirection, setSnakeDirection] = useState(direction);
+    const [isGameOver, setIsGameOver] = useState(false);
 
     //effects
     useEffect(()=>{
@@ -194,6 +191,14 @@ export default function GameBoard (props) {
         setSnakeDirection(direction);
 
     }, [direction]);
+
+    // other hooks
+    useImperativeHandle(ref, ()=>({
+        getScore:() => score,
+        getIsGameOver: () => isGameOver,
+        setIsGameOver: (yn) =>setIsGameOver(yn),
+    }))
+
     const board = Array(boundNumber + 1).fill().slice().map(($, i) => {
         const rowItems = Array(boundNumber + 1).fill().slice().map(($, j) => {
             const isSnake = snakeCoordinates.includes(`${j}_${i}`);
@@ -220,7 +225,9 @@ export default function GameBoard (props) {
         return <div key={`row_${i}`} className={styles.row} >{rowItems}</div>
     })
     return <div style={frame}>{board}</div>
-}
+});
+
+export default GameBoard;
 
 export async function getServerSideProps(context) {
     const snake = randomInteger()
